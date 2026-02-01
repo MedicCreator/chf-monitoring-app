@@ -1,0 +1,134 @@
+ import streamlit as st
+from datetime import date
+
+st.set_page_config(page_title="CHF Monitoring App", layout="centered")
+
+st.title("🫀 CHF Daily Monitoring App")
+st.caption("Track symptoms, vitals, weight, fluids, and medications")
+
+# =========================
+# PATIENT BASELINE
+# =========================
+st.sidebar.header("Baseline Settings")
+
+dry_weight = st.sidebar.number_input(
+    "Target (Dry) Weight (kg)", 30.0, 200.0, 70.0
+)
+
+fluid_limit = st.sidebar.number_input(
+    "Daily Fluid Limit (ml)", 500, 3000, 1500
+)
+
+# =========================
+# DAILY ENTRY
+# =========================
+st.header("Daily Entry")
+entry_date = st.date_input("Date", date.today())
+
+# =========================
+# SYMPTOMS
+# =========================
+st.subheader("Symptoms")
+
+sob = st.multiselect(
+    "Shortness of Breath",
+    ["At rest", "When lying down", "On exertion"]
+)
+
+steps = st.number_input("Steps before SOB", 0, 20000, 0)
+
+sob_trend = st.radio(
+    "Compared to yesterday",
+    ["Getting better", "Same", "Getting worse"]
+)
+
+# =========================
+# VITALS
+# =========================
+st.subheader("Vitals")
+
+c1, c2, c3 = st.columns(3)
+with c1:
+    systolic = st.number_input("Systolic BP", 70, 250, 120)
+    diastolic = st.number_input("Diastolic BP", 40, 150, 70)
+
+with c2:
+    heart_rate = st.number_input("Heart Rate", 30, 200, 75)
+
+with c3:
+    spo2 = st.number_input("Oxygen Saturation (%)", 70, 100, 96)
+
+# =========================
+# WEIGHT & EDEMA
+# =========================
+st.subheader("Weight & Edema")
+
+weight = st.number_input("Today's Weight (kg)", 30.0, 200.0, dry_weight)
+
+edema = st.selectbox("Edema", ["None", "Ankles", "Legs", "Abdomen"])
+
+weight_diff = weight - dry_weight
+
+# =========================
+# FLUIDS
+# =========================
+st.subheader("Fluids")
+
+fluid_intake = st.number_input("Total Fluid Intake (ml)", 0, 5000, 0)
+
+urine_output = st.selectbox("Urine Output", ["Low", "Moderate", "High"])
+
+high_fluid_foods = st.multiselect(
+    "Foods with High Fluid Content",
+    ["Soup", "Fruits", "Yogurt", "Ice cream", "Smoothies", "Gelatin"]
+)
+
+# =========================
+# MEDICATION LOG
+# =========================
+st.subheader("Medications (Logging Only)")
+
+diuretic = st.checkbox("Diuretic taken")
+bb = st.checkbox("Beta blocker taken")
+ace_arb = st.checkbox("ACEi / ARB / ARNI taken")
+sglt2 = st.checkbox("SGLT2 inhibitor taken")
+
+# =========================
+# SAVE & ALERTS
+# =========================
+if st.button("Save Entry"):
+
+    st.success("Entry saved")
+
+    st.subheader("Status & Alerts")
+
+    if "At rest" in sob:
+        st.error("🚨 Shortness of breath at rest — seek urgent care")
+
+    if weight_diff >= 1:
+        st.warning("⚠️ Weight ≥ 1 kg above target")
+
+    if fluid_intake > fluid_limit:
+        st.warning("⚠️ Fluid intake exceeds daily limit")
+
+    if systolic < 90:
+        st.error("🚨 Low blood pressure")
+
+    if spo2 < 90:
+        st.error("🚨 Low oxygen saturation")
+
+    if sob_trend == "Getting worse":
+        st.warning("⚠️ Symptoms worsening")
+
+    if (
+        weight_diff < 1
+        and fluid_intake <= fluid_limit
+        and spo2 >= 90
+        and sob_trend != "Getting worse"
+    ):
+        st.info("✅ Status appears stable today")
+
+st.markdown("---")
+st.caption(
+    "⚠️ Monitoring tool only. Medication titration must be directed by a clinician."
+)
