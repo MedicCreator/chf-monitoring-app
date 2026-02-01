@@ -132,4 +132,4 @@ st.markdown("---")
 st.caption(
     "⚠️ Monitoring tool only. Medication changes must be directed by a clinician."
 )
-Restore full CHF monitoring app
+
